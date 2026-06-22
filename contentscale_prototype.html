@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ContentScale — Прототип</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --cs-dark:#0F2E1A;
+  --cs-green:#1A5C30;
+  --cs-mint:#00B87A;
+  --cs-mint-light:#E6F7F1;
+  --cs-text:#1a2e22;
+  --cs-muted:#6B7B72;
+  --cs-border:rgba(0,0,0,0.1);
+  --cs-card:#fff;
+  --cs-bg:#F4F6F4;
+  --cs-sidebar:#0F2E1A;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:var(--cs-bg);color:var(--cs-text);height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:224px;min-width:224px;background:var(--cs-sidebar);display:flex;flex-direction:column}
+.sidebar-logo{padding:20px 18px 14px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.logo-name{color:#fff;font-size:17px;font-weight:600;letter-spacing:-0.4px}
+.logo-tag{color:rgba(255,255,255,0.35);font-size:11px;margin-top:2px}
+.sidebar-role{padding:10px 12px;margin:10px 10px 0;background:rgba(255,255,255,0.06);border-radius:8px;display:flex;align-items:center;gap:8px}
+.sidebar-role i{color:rgba(255,255,255,0.4);font-size:15px;flex-shrink:0}
+.sidebar-role select{background:transparent;border:none;color:rgba(255,255,255,0.8);font-size:12px;outline:none;width:100%;cursor:pointer}
+.sidebar-role select option{background:#0F2E1A;color:#fff}
+.sidebar-nav{flex:1;padding:10px 10px;display:flex;flex-direction:column;gap:1px;overflow-y:auto}
+.nav-label{color:rgba(255,255,255,0.28);font-size:10px;letter-spacing:0.9px;padding:10px 8px 4px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;color:rgba(255,255,255,0.55);cursor:pointer;font-size:13px;transition:all 0.12s;user-select:none}
+.nav-item:hover{background:rgba(255,255,255,0.07);color:rgba(255,255,255,0.9)}
+.nav-item.active{background:rgba(0,184,122,0.16);color:#00E09A}
+.nav-item i{font-size:16px;width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--cs-mint);color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:10px;min-width:18px;text-align:center}
+.sidebar-bottom{padding:12px 10px;border-top:1px solid rgba(255,255,255,0.07)}
+.sidebar-user{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:7px}
+.s-avatar{width:30px;height:30px;border-radius:50%;background:var(--cs-mint);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0}
+.s-name{font-size:12px;color:#fff}
+.s-role{font-size:10px;color:rgba(255,255,255,0.38)}
+
+/* MAIN */
+.main{flex:1;overflow-y:auto;background:var(--cs-bg);display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:0.5px solid var(--cs-border);padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:sticky;top:0;z-index:10}
+.topbar-title{font-size:15px;font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.icon-btn{width:34px;height:34px;display:flex;align-items:center;justify-content:center;border-radius:7px;cursor:pointer;color:var(--cs-muted);border:none;background:none;font-size:16px;position:relative}
+.icon-btn:hover{background:var(--cs-bg)}
+.notif-dot::after{content:'';position:absolute;top:7px;right:7px;width:6px;height:6px;background:var(--cs-mint);border-radius:50%;border:2px solid #fff}
+
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:0.5px solid var(--cs-border);background:#fff;color:var(--cs-text);font-family:inherit;transition:all 0.12s;text-decoration:none;user-select:none}
+.btn:hover{background:var(--cs-bg)}
+.btn-primary{background:var(--cs-mint);border-color:var(--cs-mint);color:#fff}
+.btn-primary:hover{background:#009E69;border-color:#009E69}
+.btn-sm{padding:5px 10px;font-size:12px}
+.btn-ghost{background:none;border-color:transparent;color:var(--cs-muted)}
+.btn-ghost:hover{background:var(--cs-bg);color:var(--cs-text)}
+
+/* PAGES */
+.page{padding:22px 24px;display:none;flex:1}
+.page.active{display:block}
+
+/* CARD */
+.card{background:#fff;border:0.5px solid var(--cs-border);border-radius:12px;padding:18px 20px}
+.card+.card{margin-top:12px}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* METRIC */
+.metric{background:var(--cs-bg);border-radius:9px;padding:14px 16px}
+.m-label{font-size:11px;color:var(--cs-muted);margin-bottom:5px}
+.m-val{font-size:22px;font-weight:500}
+.m-sub{font-size:11px;color:var(--cs-mint);margin-top:3px}
+
+/* BADGE */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
+.b-green{background:#E6F7F1;color:#0F6E56}
+.b-amber{background:#FEF3E2;color:#854F0B}
+.b-blue{background:#E6F1FB;color:#185FA5}
+.b-gray{background:#F1EFE8;color:#5F5E5A}
+.b-red{background:#FCEBEB;color:#A32D2D}
+.b-purple{background:#EEEDFE;color:#3C3489}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font-size:11px;font-weight:500;color:var(--cs-muted);text-align:left;padding:8px 12px;border-bottom:0.5px solid var(--cs-border)}
+.tbl td{padding:10px 12px;font-size:13px;border-bottom:0.5px solid var(--cs-border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:#f9fbf9;cursor:pointer}
+
+/* DIVIDER */
+.divider{height:0.5px;background:var(--cs-border);margin:14px 0}
+
+/* FORM */
+.form-group{margin-bottom:13px}
+.form-label{font-size:11px;font-weight:500;color:var(--cs-muted);margin-bottom:5px;display:block;text-transform:uppercase;letter-spacing:0.4px}
+.form-input{width:100%;padding:8px 10px;border:0.5px solid var(--cs-border);border-radius:7px;font-size:13px;font-family:inherit;color:var(--cs-text);background:#fff;outline:none;transition:border-color 0.12s}
+.form-input:focus{border-color:var(--cs-mint)}
+textarea.form-input{resize:vertical;min-height:70px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+
+/* STEP BAR */
+.step-bar{display:flex;gap:6px;margin-bottom:16px}
+.step-pill{flex:1;height:3px;border-radius:2px;background:var(--cs-border)}
+.step-pill.done{background:var(--cs-mint)}
+.step-pill.active{background:var(--cs-green)}
+
+/* FREELANCER CARD */
+.fl-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fl-card{background:#fff;border:0.5px solid var(--cs-border);border-radius:12px;padding:16px;cursor:pointer;transition:all 0.15s}
+.fl-card:hover{border-color:var(--cs-mint);box-shadow:0 2px 14px rgba(0,184,122,0.1)}
+.fl-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:600;color:#fff;flex-shrink:0}
+.fl-header{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+.fl-name{font-size:14px;font-weight:500}
+.fl-spec{font-size:12px;color:var(--cs-muted);margin-top:1px}
+.fl-stars{color:#F5A623;font-size:12px;margin-top:4px}
+.fl-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.fl-tag{padding:2px 7px;background:var(--cs-bg);border-radius:4px;font-size:11px;color:var(--cs-muted)}
+.fl-footer{display:flex;align-items:center;justify-content:space-between}
+.fl-price{font-size:13px;font-weight:500}
+
+/* STATUS FLOW */
+.status-flow{display:flex;align-items:flex-start;margin-bottom:18px}
+.s-step{flex:1;text-align:center}
+.s-dot{width:26px;height:26px;border-radius:50%;margin:0 auto 5px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;border:1.5px solid var(--cs-border);background:#fff;color:var(--cs-muted)}
+.s-step.done .s-dot{background:var(--cs-mint);border-color:var(--cs-mint);color:#fff}
+.s-step.active .s-dot{background:var(--cs-green);border-color:var(--cs-green);color:#fff;box-shadow:0 0 0 3px rgba(0,184,122,0.18)}
+.s-lbl{font-size:10px;color:var(--cs-muted)}
+.s-step.done .s-lbl,.s-step.active .s-lbl{color:var(--cs-green)}
+.s-line{flex:1;height:1.5px;background:var(--cs-border);margin-top:12px}
+.s-line.done{background:var(--cs-mint)}
+
+/* CHAT */
+.chat-area{display:flex;flex-direction:column;gap:10px;padding:14px;background:var(--cs-bg);border-radius:9px;max-height:200px;overflow-y:auto}
+.msg{max-width:76%}
+.msg.from-me{align-self:flex-end}
+.bubble{padding:8px 12px;border-radius:10px;font-size:13px;line-height:1.5}
+.from-them .bubble{background:#fff;border:0.5px solid var(--cs-border)}
+.from-me .bubble{background:var(--cs-mint);color:#fff}
+.msg-time{font-size:10px;color:var(--cs-muted);margin-top:3px;padding:0 4px}
+.from-me .msg-time{text-align:right}
+
+/* TABS */
+.tabs{display:flex;gap:2px;background:var(--cs-bg);padding:3px;border-radius:8px;margin-bottom:14px;width:fit-content}
+.tab{padding:6px 14px;border-radius:5px;font-size:12px;cursor:pointer;color:var(--cs-muted);user-select:none}
+.tab.active{background:#fff;color:var(--cs-text);font-weight:500}
+
+/* ADMIN STAT */
+.admin-stat{background:#fff;border:0.5px solid var(--cs-border);border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px}
+.stat-icon{width:38px;height:38px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.stat-lbl{font-size:11px;color:var(--cs-muted);margin-bottom:2px}
+.stat-val{font-size:20px;font-weight:500}
+
+/* FILTER */
+.filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.chip{padding:5px 12px;border-radius:20px;font-size:12px;border:0.5px solid var(--cs-border);background:#fff;cursor:pointer;color:var(--cs-muted);transition:all 0.12s;user-select:none}
+.chip:hover,.chip.on{background:var(--cs-mint-light);border-color:var(--cs-mint);color:var(--cs-green)}
+.search-box{display:flex;align-items:center;gap:8px;border:0.5px solid var(--cs-border);border-radius:7px;padding:7px 10px;background:#fff;max-width:260px}
+.search-box input{border:none;outline:none;font-size:13px;font-family:inherit;width:100%;background:transparent;color:var(--cs-text)}
+.search-box i{color:var(--cs-muted);font-size:15px}
+
+/* LANDING */
+.hero{background:var(--cs-sidebar);padding:44px 32px;text-align:center;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 65% 25%,rgba(0,184,122,0.12),transparent 58%)}
+.hero h1{font-size:26px;font-weight:500;color:#fff;margin-bottom:10px;position:relative;line-height:1.35;letter-spacing:-0.3px}
+.hero p{color:rgba(255,255,255,0.55);font-size:13px;max-width:380px;margin:0 auto 22px;position:relative;line-height:1.6}
+.hero-btns{display:flex;gap:10px;justify-content:center;position:relative}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.feat-card{border:0.5px solid var(--cs-border);border-radius:12px;padding:16px;background:#fff}
+.feat-icon{width:34px;height:34px;background:var(--cs-mint-light);border-radius:7px;display:flex;align-items:center;justify-content:center;margin-bottom:10px;color:var(--cs-mint);font-size:17px}
+.feat-title{font-size:13px;font-weight:500;margin-bottom:3px}
+.feat-desc{font-size:12px;color:var(--cs-muted);line-height:1.55}
+.how-item{display:flex;gap:12px;margin-bottom:14px}
+.how-num{width:26px;height:26px;border-radius:50%;background:var(--cs-mint);color:#fff;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+
+/* PROFILE */
+.profile-hero{display:flex;align-items:flex-start;gap:18px;margin-bottom:16px}
+.p-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:600;color:#fff;flex-shrink:0}
+.p-name{font-size:17px;font-weight:500;margin-bottom:2px}
+.p-spec{color:var(--cs-muted);font-size:13px;margin-bottom:8px}
+.review-item{display:flex;gap:10px;margin-bottom:11px}
+.rv-avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0}
+.rv-name{font-size:12px;font-weight:500}
+.rv-text{font-size:12px;color:var(--cs-muted);margin-top:2px;line-height:1.5}
+
+/* BAR CHART */
+.bar-chart{display:flex;align-items:flex-end;gap:6px;height:72px}
+.bc-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bc-bar{width:100%;background:var(--cs-mint-light);border-radius:3px 3px 0 0;min-height:4px;transition:all 0.3s}
+.bc-bar.current{background:var(--cs-mint)}
+.bc-lbl{font-size:10px;color:var(--cs-muted)}
+
+/* PORTFOLIO */
+.port-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.port-item{background:var(--cs-bg);border-radius:7px;padding:10px 12px;font-size:12px;color:var(--cs-muted);display:flex;align-items:center;gap:6px}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.38);z-index:100;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal-box{background:#fff;border-radius:14px;padding:22px 24px;width:400px;max-width:92vw;box-shadow:0 8px 40px rgba(0,0,0,0.12)}
+.modal-box h3{font-size:15px;font-weight:500;margin-bottom:14px}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:#0F2E1A;color:#fff;padding:10px 16px;border-radius:9px;font-size:13px;display:flex;align-items:center;gap:8px;opacity:0;transition:opacity 0.25s;z-index:200;pointer-events:none}
+.toast.show{opacity:1}
+
+/* SECTION TITLE */
+.sec-title{font-size:14px;font-weight:500;margin-bottom:14px}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-name">ContentScale</div>
+    <div class="logo-tag">Контент-маркетплейс</div>
+  </div>
+  <div class="sidebar-role">
+    <i class="ti ti-user-circle"></i>
+    <select id="roleSelect" onchange="switchRole(this.value)">
+      <option value="landing">🌐 Главная страница</option>
+      <option value="client">👤 Клиент</option>
+      <option value="freelancer">✏️ Фрилансер</option>
+      <option value="admin">⚙️ Администратор</option>
+    </select>
+  </div>
+  <div class="sidebar-nav" id="sidebarNav"></div>
+  <div class="sidebar-bottom">
+    <div class="sidebar-user">
+      <div class="s-avatar" id="sAvatar">?</div>
+      <div><div class="s-name" id="sName">Гость</div><div class="s-role" id="sRole">Не авторизован</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-title" id="topbarTitle">ContentScale</div>
+    <div class="topbar-right">
+      <button class="icon-btn notif-dot" title="Уведомления"><i class="ti ti-bell"></i></button>
+      <button class="icon-btn" title="Настройки"><i class="ti ti-settings"></i></button>
+    </div>
+  </div>
+
+  <!-- ===== LANDING ===== -->
+  <div class="page active" id="page-landing" style="padding:0">
+    <div class="hero">
+      <h1>Контент в масштабе.<br>Без компромиссов по качеству.</h1>
+      <p>Платформа соединяет маркетинговые команды с лучшими авторами, редакторами и локализаторами России и СНГ.</p>
+      <div class="hero-btns">
+        <button class="btn btn-primary" onclick="switchRole('client')"><i class="ti ti-rocket"></i>Я заказчик</button>
+        <button class="btn" style="background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.18);color:#fff" onclick="switchRole('freelancer')"><i class="ti ti-pencil"></i>Я фрилансер</button>
+      </div>
+    </div>
+    <div style="padding:24px">
+      <div class="sec-title">Почему ContentScale</div>
+      <div class="feat-grid" style="margin-bottom:20px">
+        <div class="feat-card"><div class="feat-icon"><i class="ti ti-users"></i></div><div class="feat-title">Проверенные эксперты</div><div class="feat-desc">Все фрилансеры проходят модерацию. Только специалисты с реальным портфолио.</div></div>
+        <div class="feat-card"><div class="feat-icon"><i class="ti ti-robot"></i></div><div class="feat-title">AI-помощник</div><div class="feat-desc">Генерация черновиков, улучшение стиля и проверка соответствия брифу.</div></div>
+        <div class="feat-card"><div class="feat-icon"><i class="ti ti-shield-check"></i></div><div class="feat-title">Безопасная оплата</div><div class="feat-desc">Эскроу-счёт: деньги переводятся фрилансеру только после вашего аппрува.</div></div>
+        <div class="feat-card"><div class="feat-icon"><i class="ti ti-language"></i></div><div class="feat-title">Локализация</div><div class="feat-desc">Нативные переводчики для любой языковой пары и рынка.</div></div>
+        <div class="feat-card"><div class="feat-icon"><i class="ti ti-chart-line"></i></div><div class="feat-title">Аналитика</div><div class="feat-desc">Отслеживайте проекты, бюджет и метрики в реальном времени.</div></div>
+        <div class="feat-card"><div class="feat-icon"><i class="ti ti-plug-connected"></i></div><div class="feat-title">Интеграции</div><div class="feat-desc">WordPress, HubSpot, Notion, Asana — весь workflow в одном месте.</div></div>
+      </div>
+      <div style="background:#fff;border:0.5px solid var(--cs-border);border-radius:12px;padding:20px">
+        <div class="sec-title">Как это работает</div>
+        <div class="how-item"><div class="how-num">1</div><div><div style="font-size:13px;font-weight:500;margin-bottom:2px">Создайте проект</div><div style="font-size:12px;color:var(--cs-muted);line-height:1.6">Заполните бриф: тип контента, аудитория, тон голоса, дедлайн и бюджет.</div></div></div>
+        <div class="how-item"><div class="how-num">2</div><div><div style="font-size:13px;font-weight:500;margin-bottom:2px">Выберите фрилансера</div><div style="font-size:12px;color:var(--cs-muted);line-height:1.6">Просмотрите каталог, отфильтруйте по специализации и отправьте приглашение.</div></div></div>
+        <div class="how-item"><div class="how-num">3</div><div><div style="font-size:13px;font-weight:500;margin-bottom:2px">Получите контент</div><div style="font-size:12px;color:var(--cs-muted);line-height:1.6">Фрилансер сдаёт работу, вы проверяете, запрашиваете правки и принимаете.</div></div></div>
+        <div class="how-item" style="margin-bottom:0"><div class="how-num">4</div><div><div style="font-size:13px;font-weight:500;margin-bottom:2px">Оплата после аппрува</div><div style="font-size:12px;color:var(--cs-muted);line-height:1.6">Деньги списываются с эскроу только когда вы довольны результатом. Инвойс генерируется автоматически.</div></div></div>
+      </div>
+      <div style="text-align:center;margin-top:22px">
+        <button class="btn btn-primary" onclick="switchRole('client')">Начать работу →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CLIENT DASHBOARD ===== -->
+  <div class="page" id="page-client-dashboard">
+    <div class="grid-4" style="margin-bottom:14px">
+      <div class="metric"><div class="m-label">Активных проектов</div><div class="m-val">7</div><div class="m-sub">+2 на этой неделе</div></div>
+      <div class="metric"><div class="m-label">Завершено всего</div><div class="m-val">43</div><div class="m-sub">за всё время</div></div>
+      <div class="metric"><div class="m-label">Бюджет (июнь)</div><div class="m-val">84 700 ₽</div><div class="m-sub">из 120 000 ₽</div></div>
+      <div class="metric"><div class="m-label">Среднее время</div><div class="m-val">3.4 дня</div><div class="m-sub">на выполнение</div></div>
+    </div>
+    <div class="grid-2" style="gap:14px">
+      <div class="card">
+        <div class="sec-title">Активные проекты</div>
+        <table class="tbl">
+          <thead><tr><th>Проект</th><th>Фрилансер</th><th>Статус</th><th>Срок</th></tr></thead>
+          <tbody>
+            <tr onclick="navigate('client-project')"><td>Статья для блога SaaS<br><span style="font-size:11px;color:var(--cs-muted)">1 500 слов</span></td><td style="font-size:13px">Елена К.</td><td><span class="badge b-blue">На проверке</span></td><td style="color:var(--cs-muted);font-size:12px">23 июн</td></tr>
+            <tr onclick="navigate('client-project')"><td>Серия email-писем<br><span style="font-size:11px;color:var(--cs-muted)">5 писем</span></td><td style="font-size:13px">Дмитрий В.</td><td><span class="badge b-green">В работе</span></td><td style="color:var(--cs-muted);font-size:12px">27 июн</td></tr>
+            <tr onclick="navigate('client-project')"><td>Перевод EN→RU<br><span style="font-size:11px;color:var(--cs-muted)">3 200 слов</span></td><td style="font-size:13px">Ирина М.</td><td><span class="badge b-amber">Правки</span></td><td style="color:var(--cs-muted);font-size:12px">25 июн</td></tr>
+            <tr onclick="navigate('client-project')"><td>Лендинг: новый продукт<br><span style="font-size:11px;color:var(--cs-muted)">Копирайтинг</span></td><td style="font-size:13px">–</td><td><span class="badge b-gray">Ожидает</span></td><td style="color:var(--cs-muted);font-size:12px">30 июн</td></tr>
+          </tbody>
+        </table>
+        <div style="margin-top:12px;display:flex;gap:8px">
+          <button class="btn btn-primary btn-sm" onclick="navigate('client-create')"><i class="ti ti-plus"></i>Новый проект</button>
+          <button class="btn btn-sm" onclick="navigate('client-catalog')"><i class="ti ti-users"></i>Каталог</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="padding:14px 16px">
+          <div class="sec-title" style="font-size:13px">Заказы по месяцам</div>
+          <div class="bar-chart" id="barChart"></div>
+          <div style="display:flex;justify-content:space-between;margin-top:5px">
+            <span style="font-size:10px;color:var(--cs-muted)">Янв</span><span style="font-size:10px;color:var(--cs-muted)">Фев</span><span style="font-size:10px;color:var(--cs-muted)">Мар</span><span style="font-size:10px;color:var(--cs-muted)">Апр</span><span style="font-size:10px;color:var(--cs-muted)">Май</span><span style="font-size:10px;color:var(--cs-muted)">Июн</span>
+          </div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div class="sec-title" style="font-size:13px">Топ фрилансеры</div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <div style="display:flex;align-items:center;gap:9px"><div class="fl-avatar" style="width:30px;height:30px;font-size:10px;background:#534AB7">ЕК</div><div style="flex:1"><div style="font-size:12px;font-weight:500">Елена Козлова</div><div style="font-size:11px;color:var(--cs-muted)">14 проектов</div></div><div style="color:#F5A623;font-size:12px">★ 4.9</div></div>
+            <div style="display:flex;align-items:center;gap:9px"><div class="fl-avatar" style="width:30px;height:30px;font-size:10px;background:#1D9E75">ДВ</div><div style="flex:1"><div style="font-size:12px;font-weight:500">Дмитрий Волков</div><div style="font-size:11px;color:var(--cs-muted)">8 проектов</div></div><div style="color:#F5A623;font-size:12px">★ 4.8</div></div>
+            <div style="display:flex;align-items:center;gap:9px"><div class="fl-avatar" style="width:30px;height:30px;font-size:10px;background:#D85A30">ИМ</div><div style="flex:1"><div style="font-size:12px;font-weight:500">Ирина Матвеева</div><div style="font-size:11px;color:var(--cs-muted)">6 проектов</div></div><div style="color:#F5A623;font-size:12px">★ 4.7</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CATALOG ===== -->
+  <div class="page" id="page-client-catalog">
+    <div class="filter-row">
+      <div class="search-box"><i class="ti ti-search"></i><input type="text" placeholder="Поиск по имени или навыкам..."></div>
+      <div class="chip on" onclick="toggleChip(this)">Все</div>
+      <div class="chip" onclick="toggleChip(this)">Авторы</div>
+      <div class="chip" onclick="toggleChip(this)">Редакторы</div>
+      <div class="chip" onclick="toggleChip(this)">Локализаторы</div>
+      <div class="chip" onclick="toggleChip(this)">SaaS</div>
+      <div class="chip" onclick="toggleChip(this)">Финтех</div>
+      <div class="chip" onclick="toggleChip(this)">Только свободные</div>
+    </div>
+    <div class="fl-grid">
+      <div class="fl-card" onclick="navigate('client-profile')">
+        <div class="fl-header"><div class="fl-avatar" style="width:44px;height:44px;font-size:14px;background:#534AB7">ЕК</div><div><div class="fl-name">Елена Козлова</div><div class="fl-spec">Автор · Редактор</div><div class="fl-stars">★★★★★ <span style="color:var(--cs-muted)">4.9 (37 отз.)</span></div></div></div>
+        <div class="fl-tags"><span class="fl-tag">SaaS</span><span class="fl-tag">B2B</span><span class="fl-tag">SEO</span><span class="fl-tag">Финтех</span></div>
+        <div class="fl-footer"><div class="fl-price">800 ₽ / 1 000 сл.</div><span class="badge b-green">Свободна</span></div>
+      </div>
+      <div class="fl-card" onclick="navigate('client-profile')">
+        <div class="fl-header"><div class="fl-avatar" style="width:44px;height:44px;font-size:14px;background:#1D9E75">ДВ</div><div><div class="fl-name">Дмитрий Волков</div><div class="fl-spec">Автор · Копирайтер</div><div class="fl-stars">★★★★★ <span style="color:var(--cs-muted)">4.8 (22 отз.)</span></div></div></div>
+        <div class="fl-tags"><span class="fl-tag">e-commerce</span><span class="fl-tag">Email</span><span class="fl-tag">Лендинги</span></div>
+        <div class="fl-footer"><div class="fl-price">650 ₽ / 1 000 сл.</div><span class="badge b-green">Свободен</span></div>
+      </div>
+      <div class="fl-card" onclick="navigate('client-profile')">
+        <div class="fl-header"><div class="fl-avatar" style="width:44px;height:44px;font-size:14px;background:#D85A30">ИМ</div><div><div class="fl-name">Ирина Матвеева</div><div class="fl-spec">Локализатор</div><div class="fl-stars">★★★★☆ <span style="color:var(--cs-muted)">4.7 (18 отз.)</span></div></div></div>
+        <div class="fl-tags"><span class="fl-tag">EN→RU</span><span class="fl-tag">DE→RU</span><span class="fl-tag">Медицина</span></div>
+        <div class="fl-footer"><div class="fl-price">900 ₽ / 1 000 сл.</div><span class="badge b-amber">Занята</span></div>
+      </div>
+      <div class="fl-card" onclick="navigate('client-profile')">
+        <div class="fl-header"><div class="fl-avatar" style="width:44px;height:44px;font-size:14px;background:#185FA5">АС</div><div><div class="fl-name">Алексей Соловьёв</div><div class="fl-spec">Технический автор</div><div class="fl-stars">★★★★★ <span style="color:var(--cs-muted)">4.9 (51 отз.)</span></div></div></div>
+        <div class="fl-tags"><span class="fl-tag">IT</span><span class="fl-tag">DevRel</span><span class="fl-tag">API-docs</span></div>
+        <div class="fl-footer"><div class="fl-price">1 100 ₽ / 1 000 сл.</div><span class="badge b-green">Свободен</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FREELANCER PROFILE ===== -->
+  <div class="page" id="page-client-profile">
+    <div style="display:flex;gap:16px">
+      <div style="flex:1">
+        <div class="card">
+          <div class="profile-hero">
+            <div class="p-avatar" style="width:68px;height:68px;font-size:20px;background:#534AB7">ЕК</div>
+            <div style="flex:1">
+              <div class="p-name">Елена Козлова</div>
+              <div class="p-spec">Автор · Редактор · SaaS / B2B / Финтех</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <span class="badge b-green">Свободна</span>
+                <span style="font-size:12px;color:var(--cs-muted)">★ 4.9 · 37 отзывов</span>
+                <span style="font-size:12px;color:var(--cs-muted)">43 проекта</span>
+              </div>
+            </div>
+            <button class="btn btn-primary" onclick="openModal('invite')"><i class="ti ti-send"></i>Пригласить</button>
+          </div>
+          <p style="font-size:13px;color:var(--cs-muted);line-height:1.7">Пишу SEO-статьи и контент для SaaS-продуктов более 5 лет. Специализируюсь на сложных B2B-темах: помогаю превращать технические концепции в понятные тексты для маркетинговых команд. Гарантирую соответствие TOV и 2 раунда правок.</p>
+          <div class="divider"></div>
+          <div class="sec-title" style="font-size:13px">Портфолио</div>
+          <div class="port-grid">
+            <div class="port-item"><i class="ti ti-file-text"></i>Кейс Tinkoff B2B</div>
+            <div class="port-item"><i class="ti ti-file-text"></i>Серия статей SaaS</div>
+            <div class="port-item"><i class="ti ti-file-text"></i>Email-воронка</div>
+          </div>
+        </div>
+      </div>
+      <div style="width:210px;display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="padding:14px 16px">
+          <div class="m-label">Ставка</div>
+          <div style="font-size:18px;font-weight:500;margin:4px 0">800 ₽ <span style="font-size:12px;font-weight:400;color:var(--cs-muted)">/ 1 000 слов</span></div>
+          <div class="divider"></div>
+          <div style="font-size:11px;color:var(--cs-muted);margin-bottom:6px">Языки</div>
+          <div style="font-size:13px;margin-bottom:2px">🇷🇺 Русский (носитель)</div>
+          <div style="font-size:13px;color:var(--cs-muted)">🇬🇧 Английский (B2)</div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div class="sec-title" style="font-size:13px">Отзывы</div>
+          <div class="review-item"><div class="rv-avatar" style="background:#1D9E75">АМ</div><div><div class="rv-name">Анна М.</div><div class="rv-text">Отличная работа, всё в срок, тон голоса идеален!</div></div></div>
+          <div class="review-item" style="margin-bottom:0"><div class="rv-avatar" style="background:#185FA5">ИС</div><div><div class="rv-name">Иван С.</div><div class="rv-text">Рекомендую — быстро погружается в тему, пишет без воды.</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== CREATE PROJECT ===== -->
+  <div class="page" id="page-client-create">
+    <div class="card" style="max-width:540px">
+      <div class="step-bar"><div class="step-pill done"></div><div class="step-pill active"></div><div class="step-pill"></div></div>
+      <div style="font-size:11px;color:var(--cs-muted);margin-bottom:16px;text-transform:uppercase;letter-spacing:0.4px">Шаг 2 из 3 — Детали проекта</div>
+      <div class="form-group"><label class="form-label">Название проекта</label><input class="form-input" type="text" placeholder="Напр.: Серия статей для блога о CRM"></div>
+      <div class="form-group"><label class="form-label">Тип контента</label><select class="form-input"><option>Статья / блог</option><option>Лендинг</option><option>Email-серия</option><option>Перевод / локализация</option><option>SMM-контент</option><option>Описание товара</option><option>Дизайн</option></select></div>
+      <div class="form-row">
+        <div class="form-group"><label class="form-label">Объём (слов)</label><input class="form-input" type="number" placeholder="1 500"></div>
+        <div class="form-group"><label class="form-label">Дедлайн</label><input class="form-input" type="date"></div>
+      </div>
+      <div class="form-group"><label class="form-label">Тон голоса</label><select class="form-input"><option>Экспертный</option><option>Дружелюбный</option><option>Формальный</option><option>Нейтральный</option></select></div>
+      <div class="form-group"><label class="form-label">Ключевые слова (SEO)</label><input class="form-input" type="text" placeholder="CRM для малого бизнеса, автоматизация продаж..."></div>
+      <div class="form-group"><label class="form-label">Бюджет (₽)</label><input class="form-input" type="number" placeholder="5 000"></div>
+      <div class="form-group"><label class="form-label">Примечания</label><textarea class="form-input" placeholder="Целевая аудитория, особые требования, примеры..."></textarea></div>
+      <div style="display:flex;gap:10px;justify-content:flex-end">
+        <button class="btn" onclick="navigate('client-catalog')">← Выбрать фрилансера</button>
+        <button class="btn btn-primary" onclick="doEscrow()">Оплатить в эскроу →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== PROJECT (CLIENT VIEW) ===== -->
+  <div class="page" id="page-client-project">
+    <div style="display:flex;gap:14px">
+      <div style="flex:1">
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px">
+            <div><div style="font-size:16px;font-weight:500">Статья: SaaS-инструменты для маркетологов</div><div style="font-size:12px;color:var(--cs-muted);margin-top:3px">Автор: Елена Козлова · 1 500 слов · к 23 июня</div></div>
+            <span class="badge b-blue" style="font-size:12px;padding:4px 10px">На проверке</span>
+          </div>
+          <div style="display:flex;align-items:flex-start">
+            <div class="s-step done"><div class="s-dot"><i class="ti ti-check"></i></div><div class="s-lbl">Бриф</div></div>
+            <div class="s-line done"></div>
+            <div class="s-step done"><div class="s-dot"><i class="ti ti-check"></i></div><div class="s-lbl">В работе</div></div>
+            <div class="s-line done"></div>
+            <div class="s-step active"><div class="s-dot">3</div><div class="s-lbl">Проверка</div></div>
+            <div class="s-line"></div>
+            <div class="s-step"><div class="s-dot">4</div><div class="s-lbl">Правки</div></div>
+            <div class="s-line"></div>
+            <div class="s-step"><div class="s-dot">5</div><div class="s-lbl">Завершён</div></div>
+          </div>
+          <div style="display:flex;gap:8px;border-top:0.5px solid var(--cs-border);padding-top:12px;margin-top:4px">
+            <button class="btn btn-primary btn-sm" onclick="doApprove()"><i class="ti ti-check"></i>Принять работу</button>
+            <button class="btn btn-sm" onclick="doRevision()"><i class="ti ti-edit"></i>Запросить правки</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="tabs">
+            <div class="tab active" onclick="switchTab(this,'tc')">Чат</div>
+            <div class="tab" onclick="switchTab(this,'tf')">Файлы</div>
+            <div class="tab" onclick="switchTab(this,'th')">История</div>
+          </div>
+          <div id="tc">
+            <div class="chat-area">
+              <div class="msg from-them"><div class="bubble">Здравствуйте! Уточню — вы ориентируетесь на CMO или контент-менеджеров?</div><div class="msg-time">19 июн · 10:14</div></div>
+              <div class="msg from-me"><div class="bubble">Контент-менеджеры в B2B SaaS-компаниях, 50–500 сотрудников.</div><div class="msg-time">19 июн · 10:32</div></div>
+              <div class="msg from-them"><div class="bubble">Отлично, сдам черновик к вечеру 21 июня!</div><div class="msg-time">19 июн · 10:35</div></div>
+              <div class="msg from-them"><div class="bubble">Статья готова! Загрузила финальный вариант в файлы.</div><div class="msg-time">21 июн · 18:02</div></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:10px"><input class="form-input" style="flex:1" type="text" placeholder="Написать сообщение..."><button class="btn btn-primary btn-sm"><i class="ti ti-send"></i></button></div>
+          </div>
+          <div id="tf" style="display:none">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--cs-bg);border-radius:8px"><i class="ti ti-file-text" style="font-size:20px;color:var(--cs-mint)"></i><div style="flex:1"><div style="font-size:13px;font-weight:500">статья_финал_v2.docx</div><div style="font-size:11px;color:var(--cs-muted)">Загружено: 21 июн · 18:02</div></div><button class="btn btn-sm"><i class="ti ti-download"></i>Скачать</button></div>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--cs-bg);border-radius:8px"><i class="ti ti-file-text" style="font-size:20px;color:var(--cs-muted)"></i><div style="flex:1"><div style="font-size:13px;font-weight:500">бриф_проекта.pdf</div><div style="font-size:11px;color:var(--cs-muted)">Загружено: 18 июн · 09:15</div></div><button class="btn btn-sm"><i class="ti ti-download"></i>Скачать</button></div>
+            </div>
+          </div>
+          <div id="th" style="display:none">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--cs-mint);flex-shrink:0;margin-top:4px"></div><div><div style="font-size:12px;font-weight:500">Статья сдана на проверку</div><div style="font-size:11px;color:var(--cs-muted)">21 июн, 18:02 · Елена Козлова</div></div></div>
+              <div style="display:flex;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--cs-mint);flex-shrink:0;margin-top:4px"></div><div><div style="font-size:12px;font-weight:500">Статус: В работе</div><div style="font-size:11px;color:var(--cs-muted)">19 июн, 09:00 · Система</div></div></div>
+              <div style="display:flex;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--cs-mint);flex-shrink:0;margin-top:4px"></div><div><div style="font-size:12px;font-weight:500">Оплата в эскроу: 6 000 ₽</div><div style="font-size:11px;color:var(--cs-muted)">18 июн, 09:18 · Анна Морозова</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="width:196px;display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="padding:14px 16px">
+          <div class="m-label">Сумма заказа</div>
+          <div style="font-size:18px;font-weight:500;margin:4px 0">6 000 ₽</div>
+          <div style="font-size:11px;color:var(--cs-muted)">Комиссия (15%)</div>
+          <div style="font-size:13px;color:var(--cs-muted)">−900 ₽</div>
+          <div class="divider"></div>
+          <div style="font-size:11px;color:var(--cs-muted)">Фрилансер получит</div>
+          <div style="font-size:15px;font-weight:500;color:var(--cs-green)">5 100 ₽</div>
+          <div style="margin-top:8px"><span class="badge b-blue">В эскроу</span></div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div style="font-size:12px;font-weight:500;margin-bottom:8px">Фрилансер</div>
+          <div style="display:flex;align-items:center;gap:8px"><div class="fl-avatar" style="width:30px;height:30px;font-size:10px;background:#534AB7">ЕК</div><div><div style="font-size:12px;font-weight:500">Елена Козлова</div><div style="font-size:11px;color:var(--cs-muted)">★ 4.9</div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FREELANCER DASHBOARD ===== -->
+  <div class="page" id="page-freelancer-dashboard">
+    <div class="grid-4" style="margin-bottom:14px">
+      <div class="metric"><div class="m-label">Заработок (июнь)</div><div class="m-val">38 250 ₽</div><div class="m-sub">+12% к маю</div></div>
+      <div class="metric"><div class="m-label">Активных проектов</div><div class="m-val">4</div><div class="m-sub">1 срочный</div></div>
+      <div class="metric"><div class="m-label">Рейтинг</div><div class="m-val">★ 4.9</div><div class="m-sub">37 отзывов</div></div>
+      <div class="metric"><div class="m-label">Приглашений</div><div class="m-val">3</div><div class="m-sub">нужен ответ</div></div>
+    </div>
+    <div class="grid-2" style="gap:14px">
+      <div class="card">
+        <div class="sec-title">Входящие приглашения</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="border:0.5px solid var(--cs-border);border-radius:9px;padding:12px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div><div style="font-size:13px;font-weight:500">Статья: Маркетинг для стартапов</div><div style="font-size:11px;color:var(--cs-muted);margin-top:2px">2 000 слов · до 28 июн · 9 000 ₽</div></div><span class="badge b-amber">Новое</span></div>
+            <div style="display:flex;gap:8px"><button class="btn btn-primary btn-sm" onclick="toast('Приглашение принято!')">Принять</button><button class="btn btn-sm" onclick="toast('Приглашение отклонено')">Отклонить</button></div>
+          </div>
+          <div style="border:0.5px solid var(--cs-border);border-radius:9px;padding:12px">
+            <div style="display:flex;justify-content:space-between;margin-bottom:8px"><div><div style="font-size:13px;font-weight:500">SEO-статья: Fintech Trends 2025</div><div style="font-size:11px;color:var(--cs-muted);margin-top:2px">1 500 слов · до 25 июн · 7 200 ₽</div></div><span class="badge b-amber">Новое</span></div>
+            <div style="display:flex;gap:8px"><button class="btn btn-primary btn-sm" onclick="toast('Приглашение принято!')">Принять</button><button class="btn btn-sm" onclick="toast('Приглашение отклонено')">Отклонить</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="sec-title">Активные проекты</div>
+        <table class="tbl">
+          <thead><tr><th>Проект</th><th>Статус</th><th>Срок</th></tr></thead>
+          <tbody>
+            <tr onclick="navigate('freelancer-project')"><td>SaaS-статья для блога<br><span style="font-size:11px;color:var(--cs-muted)">Анна М.</span></td><td><span class="badge b-blue">На проверке</span></td><td style="font-size:12px;color:var(--cs-muted)">23 июн</td></tr>
+            <tr><td>Перевод EN→RU<br><span style="font-size:11px;color:var(--cs-muted)">Игорь Р.</span></td><td><span class="badge b-green">В работе</span></td><td style="font-size:12px;color:var(--cs-muted)">26 июн</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== FREELANCER PROJECT ===== -->
+  <div class="page" id="page-freelancer-project">
+    <div class="grid-2" style="gap:14px">
+      <div>
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px"><div><div style="font-size:15px;font-weight:500">Статья для блога: SaaS-инструменты</div><div style="font-size:12px;color:var(--cs-muted);margin-top:3px">Клиент: Анна Морозова · 1 500 слов · к 23 июня</div></div><span class="badge b-blue">На проверке</span></div>
+          <div style="background:var(--cs-bg);border-radius:9px;padding:12px;margin-bottom:12px;font-size:12px;color:var(--cs-muted);line-height:1.7">
+            <strong style="color:var(--cs-text);font-weight:500">Аудитория:</strong> контент-менеджеры в B2B SaaS<br>
+            <strong style="color:var(--cs-text);font-weight:500">Ключевые слова:</strong> SaaS-инструменты, контент-маркетинг<br>
+            <strong style="color:var(--cs-text);font-weight:500">TOV:</strong> Экспертный, без воды · <strong style="color:var(--cs-text);font-weight:500">Бюджет:</strong> 6 000 ₽
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-sm"><i class="ti ti-upload"></i>Загрузить файл</button>
+            <button class="btn btn-sm" style="border-color:var(--cs-mint);color:var(--cs-green)" onclick="toast('AI-помощник запущен...')"><i class="ti ti-robot"></i>AI-помощник</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="sec-title" style="font-size:13px">Чат с клиентом</div>
+          <div class="chat-area">
+            <div class="msg from-them"><div class="bubble">Сделайте упор на практические примеры с метриками.</div><div class="msg-time">18 июн · 09:15</div></div>
+            <div class="msg from-me"><div class="bubble">Учту! Добавлю 3–4 кейса с реальными цифрами.</div><div class="msg-time">18 июн · 10:02</div></div>
+            <div class="msg from-me"><div class="bubble">Статья готова, загрузила финальный вариант!</div><div class="msg-time">21 июн · 18:02</div></div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:10px"><input class="form-input" style="flex:1" type="text" placeholder="Ответить..."><button class="btn btn-primary btn-sm"><i class="ti ti-send"></i></button></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="padding:14px 16px">
+          <div class="m-label">Ваш заработок</div>
+          <div style="font-size:18px;font-weight:500;color:var(--cs-green);margin:4px 0">5 100 ₽</div>
+          <div style="font-size:11px;color:var(--cs-muted)">после комиссии платформы 15%</div>
+          <div class="divider"></div>
+          <div style="font-size:11px;color:var(--cs-muted)">Статус оплаты</div>
+          <div style="margin-top:4px"><span class="badge b-blue">В эскроу</span></div>
+          <div style="font-size:11px;color:var(--cs-muted);margin-top:8px">Раундов правок: 0 из 2</div>
+        </div>
+        <div class="card" style="padding:14px 16px">
+          <div class="sec-title" style="font-size:13px">Файлы проекта</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--cs-muted)"><i class="ti ti-file-text" style="font-size:15px;color:var(--cs-mint)"></i>бриф_проекта.pdf</div>
+            <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--cs-muted)"><i class="ti ti-file-text" style="font-size:15px;color:var(--cs-mint)"></i>статья_финал_v2.docx</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN DASHBOARD ===== -->
+  <div class="page" id="page-admin-dashboard">
+    <div class="grid-4" style="margin-bottom:14px">
+      <div class="admin-stat"><div class="stat-icon" style="background:#E6F7F1;color:var(--cs-mint)"><i class="ti ti-chart-bar"></i></div><div><div class="stat-lbl">GMV платформы</div><div class="stat-val">4.2 млн ₽</div></div></div>
+      <div class="admin-stat"><div class="stat-icon" style="background:#E6F1FB;color:#185FA5"><i class="ti ti-users"></i></div><div><div class="stat-lbl">Клиентов</div><div class="stat-val">284</div></div></div>
+      <div class="admin-stat"><div class="stat-icon" style="background:#EEEDFE;color:#534AB7"><i class="ti ti-pencil"></i></div><div><div class="stat-lbl">Фрилансеров</div><div class="stat-val">1 140</div></div></div>
+      <div class="admin-stat"><div class="stat-icon" style="background:#FEF3E2;color:#854F0B"><i class="ti ti-coin"></i></div><div><div class="stat-lbl">Доход (комиссии)</div><div class="stat-val">638 000 ₽</div></div></div>
+    </div>
+    <div class="grid-2" style="gap:14px">
+      <div class="card">
+        <div class="sec-title">Модерация фрилансеров <span class="badge b-amber" style="margin-left:6px">3 заявки</span></div>
+        <table class="tbl">
+          <thead><tr><th>Кандидат</th><th>Специализация</th><th>Дата</th><th>Действие</th></tr></thead>
+          <tbody>
+            <tr><td>Михаил Архипов</td><td style="font-size:12px">Автор · IT</td><td style="color:var(--cs-muted);font-size:12px">20 июн</td><td><div style="display:flex;gap:5px"><button class="btn btn-primary btn-sm" onclick="toast('✓ Аккаунт одобрен')">✓</button><button class="btn btn-sm" onclick="toast('✕ Отклонён')">✕</button></div></td></tr>
+            <tr><td>Алиса Петрова</td><td style="font-size:12px">Дизайнер</td><td style="color:var(--cs-muted);font-size:12px">20 июн</td><td><div style="display:flex;gap:5px"><button class="btn btn-primary btn-sm" onclick="toast('✓ Аккаунт одобрен')">✓</button><button class="btn btn-sm" onclick="toast('✕ Отклонён')">✕</button></div></td></tr>
+            <tr><td>Роман Семёнов</td><td style="font-size:12px">Локализатор</td><td style="color:var(--cs-muted);font-size:12px">19 июн</td><td><div style="display:flex;gap:5px"><button class="btn btn-primary btn-sm" onclick="toast('✓ Аккаунт одобрен')">✓</button><button class="btn btn-sm" onclick="toast('✕ Отклонён')">✕</button></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <div class="sec-title">Настройки комиссии</div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+          <div><div style="font-size:11px;color:var(--cs-muted);margin-bottom:4px">Комиссия с заказа</div><div style="font-size:26px;font-weight:500;color:var(--cs-green)" id="commVal">15%</div></div>
+          <input type="range" min="5" max="30" value="15" style="flex:1" oninput="document.getElementById('commVal').textContent=this.value+'%'">
+        </div>
+        <div class="divider"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+          <div style="background:var(--cs-bg);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--cs-muted)">Транзакций всего</div><div style="font-size:16px;font-weight:500;margin-top:3px">1 247</div></div>
+          <div style="background:var(--cs-bg);border-radius:8px;padding:10px"><div style="font-size:11px;color:var(--cs-muted)">В обработке</div><div style="font-size:16px;font-weight:500;margin-top:3px">38</div></div>
+        </div>
+        <button class="btn btn-primary btn-sm" style="width:100%" onclick="toast('Настройки сохранены')">Сохранить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== ADMIN USERS ===== -->
+  <div class="page" id="page-admin-users">
+    <div class="filter-row">
+      <div class="search-box"><i class="ti ti-search"></i><input type="text" placeholder="Найти пользователя..."></div>
+      <div class="chip on" onclick="toggleChip(this)">Все</div>
+      <div class="chip" onclick="toggleChip(this)">Клиенты</div>
+      <div class="chip" onclick="toggleChip(this)">Фрилансеры</div>
+      <div class="chip" onclick="toggleChip(this)">Заблокированные</div>
+    </div>
+    <div class="card">
+      <table class="tbl">
+        <thead><tr><th>Пользователь</th><th>Роль</th><th>Регистрация</th><th>Проектов</th><th>Статус</th><th></th></tr></thead>
+        <tbody>
+          <tr><td>Анна Морозова<br><span style="font-size:11px;color:var(--cs-muted)">a.morozova@mail.ru</span></td><td><span class="badge b-blue">Клиент</span></td><td style="font-size:12px;color:var(--cs-muted)">12 фев 2024</td><td>43</td><td><span class="badge b-green">Активна</span></td><td><button class="btn btn-sm" onclick="toast('Пользователь заблокирован')">Блокировать</button></td></tr>
+          <tr><td>Елена Козлова<br><span style="font-size:11px;color:var(--cs-muted)">e.kozlova@gmail.com</span></td><td><span class="badge b-green">Фрилансер</span></td><td style="font-size:12px;color:var(--cs-muted)">5 мар 2023</td><td>143</td><td><span class="badge b-green">Активна</span></td><td><button class="btn btn-sm" onclick="toast('Пользователь заблокирована')">Блокировать</button></td></tr>
+          <tr><td>Игорь Смирнов<br><span style="font-size:11px;color:var(--cs-muted)">i.smirnov@yandex.ru</span></td><td><span class="badge b-blue">Клиент</span></td><td style="font-size:12px;color:var(--cs-muted)">20 янв 2024</td><td>12</td><td><span class="badge b-red">Заблокирован</span></td><td><button class="btn btn-primary btn-sm" onclick="toast('Пользователь разблокирован')">Разблокировать</button></td></tr>
+          <tr><td>Дмитрий Волков<br><span style="font-size:11px;color:var(--cs-muted)">d.volkov@gmail.com</span></td><td><span class="badge b-green">Фрилансер</span></td><td style="font-size:12px;color:var(--cs-muted)">9 апр 2023</td><td>98</td><td><span class="badge b-green">Активен</span></td><td><button class="btn btn-sm" onclick="toast('Пользователь заблокирован')">Блокировать</button></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div><!-- /main -->
+</div><!-- /app -->
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modalInvite" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <h3>Пригласить Елену Козлову</h3>
+    <div class="form-group"><label class="form-label">Проект</label><select class="form-input"><option>Создать новый проект</option><option>Серия email-писем</option><option>Лендинг для продукта</option></select></div>
+    <div class="form-group"><label class="form-label">Сообщение</label><textarea class="form-input" placeholder="Расскажите о проекте..."></textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="sendInvite()"><i class="ti ti-send"></i>Отправить</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl"><i class="ti ti-check"></i><span id="toastMsg"></span></div>
+
+<script>
+const navCfg={
+  landing:{user:'Гость',role:'Не авторизован',avatar:'?',nav:[{icon:'ti-home',label:'Главная',page:'landing'}]},
+  client:{user:'Анна Морозова',role:'Клиент',avatar:'АМ',nav:[
+    {t:'label',label:'МЕНЮ'},
+    {icon:'ti-layout-dashboard',label:'Дашборд',page:'client-dashboard'},
+    {icon:'ti-users',label:'Каталог фрилансеров',page:'client-catalog'},
+    {icon:'ti-folder',label:'Мои проекты',page:'client-project'},
+    {icon:'ti-plus',label:'Новый проект',page:'client-create'},
+    {t:'label',label:'АККАУНТ'},
+    {icon:'ti-credit-card',label:'Оплата и инвойсы',page:'client-dashboard'},
+    {icon:'ti-plug-connected',label:'Интеграции',page:'client-dashboard'},
+    {icon:'ti-settings',label:'Настройки',page:'client-dashboard'},
+  ]},
+  freelancer:{user:'Елена Козлова',role:'Фрилансер',avatar:'ЕК',nav:[
+    {t:'label',label:'МЕНЮ'},
+    {icon:'ti-layout-dashboard',label:'Дашборд',page:'freelancer-dashboard',badge:'3'},
+    {icon:'ti-folder',label:'Мои проекты',page:'freelancer-project'},
+    {icon:'ti-mail',label:'Приглашения',page:'freelancer-dashboard',badge:'3'},
+    {t:'label',label:'ПРОФИЛЬ'},
+    {icon:'ti-user',label:'Мой профиль',page:'freelancer-dashboard'},
+    {icon:'ti-coin',label:'Заработок',page:'freelancer-dashboard'},
+    {icon:'ti-settings',label:'Настройки',page:'freelancer-dashboard'},
+  ]},
+  admin:{user:'Администратор',role:'Admin',avatar:'АД',nav:[
+    {t:'label',label:'ПЛАТФОРМА'},
+    {icon:'ti-layout-dashboard',label:'Обзор',page:'admin-dashboard'},
+    {icon:'ti-users',label:'Пользователи',page:'admin-users'},
+    {icon:'ti-folder',label:'Все проекты',page:'admin-dashboard'},
+    {icon:'ti-shield-check',label:'Модерация',page:'admin-dashboard',badge:'3'},
+    {t:'label',label:'ФИНАНСЫ'},
+    {icon:'ti-chart-bar',label:'Аналитика',page:'admin-dashboard'},
+    {icon:'ti-coin',label:'Транзакции',page:'admin-dashboard'},
+    {icon:'ti-settings',label:'Комиссии',page:'admin-dashboard'},
+  ]},
+};
+
+const titles={landing:'ContentScale',
+  'client-dashboard':'Дашборд','client-catalog':'Каталог фрилансеров',
+  'client-profile':'Профиль фрилансера','client-create':'Новый проект',
+  'client-project':'Проект: SaaS-статья',
+  'freelancer-dashboard':'Дашборд фрилансера','freelancer-project':'Проект: SaaS-статья',
+  'admin-dashboard':'Обзор платформы','admin-users':'Пользователи',
+};
+
+function switchRole(role){
+  document.getElementById('roleSelect').value=role;
+  const cfg=navCfg[role];
+  document.getElementById('sName').textContent=cfg.user;
+  document.getElementById('sRole').textContent=cfg.role;
+  document.getElementById('sAvatar').textContent=cfg.avatar;
+  const nav=document.getElementById('sidebarNav');
+  nav.innerHTML='';
+  cfg.nav.forEach(item=>{
+    if(item.t==='label'){const el=document.createElement('div');el.className='nav-label';el.textContent=item.label;nav.appendChild(el);return;}
+    const el=document.createElement('div');el.className='nav-item';
+    el.innerHTML=`<i class="ti ${item.icon}"></i>${item.label}${item.badge?`<span class="nav-badge">${item.badge}</span>`:''}`;
+    el.dataset.page=item.page;
+    el.onclick=()=>navigate(item.page);
+    nav.appendChild(el);
+  });
+  const first=cfg.nav.find(n=>n.page);
+  if(first)navigate(first.page);
+}
+
+function navigate(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const el=document.getElementById('page-'+page);
+  if(el)el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n=>{
+    n.classList.toggle('active',n.dataset&&n.dataset.page===page);
+  });
+  document.getElementById('topbarTitle').textContent=titles[page]||page;
+  if(page==='client-dashboard')buildChart();
+}
+
+function buildChart(){
+  const data=[8,12,10,15,18,22];const max=Math.max(...data);
+  const el=document.getElementById('barChart');if(!el)return;el.innerHTML='';
+  data.forEach((v,i)=>{
+    const col=document.createElement('div');col.className='bc-col';
+    const bar=document.createElement('div');bar.className='bc-bar'+(i===5?' current':'');
+    bar.style.height=Math.round(v/max*64)+'px';
+    col.appendChild(bar);el.appendChild(col);
+  });
+}
+
+function toggleChip(el){el.classList.toggle('on')}
+function switchTab(el,id){
+  el.parentElement.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['tc','tf','th'].forEach(k=>{const e=document.getElementById(k);if(e)e.style.display=k===id?'block':'none';});
+}
+
+function openModal(n){document.getElementById('modal'+n[0].toUpperCase()+n.slice(1)).classList.add('open')}
+function closeModal(){document.querySelectorAll('.modal-overlay').forEach(m=>m.classList.remove('open'))}
+function sendInvite(){closeModal();toast('Приглашение отправлено!')}
+
+let _tt;
+function toast(msg){
+  const el=document.getElementById('toastEl');
+  document.getElementById('toastMsg').textContent=msg;
+  el.classList.add('show');clearTimeout(_tt);
+  _tt=setTimeout(()=>el.classList.remove('show'),2600);
+}
+function doApprove(){toast('✓ Контент принят! Оплата 5 100 ₽ переведена фрилансеру.')}
+function doRevision(){toast('Запрос на правки отправлен фрилансеру')}
+function doEscrow(){toast('6 000 ₽ заблокировано в эскроу! Приглашение отправлено.')}
+
+switchRole('landing');
+</script>
+</body>
+</html>
