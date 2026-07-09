@@ -1561,10 +1561,10 @@ function renderSpecBuilder(sid, iid) {
   // - catalogue product: price = _basePrice + totalOut of extra specs
   const isCustomOrSpec = isPureSpec || it.svcId === 'custom';
   if(isCustomOrSpec) {
-    if(totalOut > 0) {
-      it.price = Math.round(totalOut);
-      it.priceFromHours = true;
-    }
+    // Also add unit items total for custom items
+    const unitTotal = (it.unitItems||[]).reduce((a,u)=>a+Math.round((u.qty||1)*(u.price||0)),0);
+    it.price = Math.round(totalOut) + unitTotal;
+    it.priceFromHours = totalOut > 0;
   } else if(totalOut > 0) {
     // Catalogue product: _basePrice + extra specs
     if(!it._basePrice) it._basePrice = it.price;
@@ -1741,12 +1741,21 @@ function renderUnitBuilder(sid, iid) {
   const totalEl = document.getElementById('unit-total-'+iid);
   if(totalEl) totalEl.textContent = 'Итого: '+Math.round(total).toLocaleString('ru-RU')+' ₽';
   // Update price:
-  // - from-units: price = total of all unit items
-  // - custom (manual): price = total of unit items (no base price to preserve)
-  // - catalogue product: price = base + unit total
+  // - from-units: price = units total only
+  // - custom: price = specialists OUT + units total combined
+  // - catalogue: price = _basePrice + units total
   const isCustom = it.svcId === 'custom';
-  if(isPureUnit || isCustom) {
+  if(isPureUnit) {
     it.price = Math.round(total);
+  } else if(isCustom) {
+    const mr2 = it.manualRates || {};
+    const specTotal = Object.entries(it.customHours||{}).reduce((a,[role,h])=>{
+      if(!h) return a;
+      const rate = TEAM_RATE_OUT[role];
+      const rOut = rate ? rate.rate_out : (mr2[role]?.out||0);
+      return a + Math.round(h * rOut);
+    }, 0);
+    it.price = specTotal + Math.round(total);
   } else if(total > 0) {
     if(!it._basePrice) it._basePrice = it.price;
     it.price = Math.round(it._basePrice + total);
