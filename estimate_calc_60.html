@@ -548,10 +548,16 @@
           <label><input type="checkbox" id="opt-desc" checked onchange="renderClient()"> Описание</label>
           <label><input type="checkbox" id="opt-vat" checked onchange="renderClient()"> НДС 22%</label>
         </div>
+        <div style="display:flex;gap:10px">
+        <button onclick="doPrint()" style="display:flex;align-items:center;gap:8px;padding:9px 18px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(31,58,77,0.3);transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+          <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Печать / PDF
+        </button>
         <button onclick="exportToExcel()" style="display:flex;align-items:center;gap:8px;padding:9px 18px;background:#1D6F42;color:#fff;border:none;border-radius:8px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(29,111,66,0.3);transition:opacity .15s" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
           <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><polyline points="9 15 12 18 15 15"/></svg>
           Скачать Excel
         </button>
+        </div>
       </div>
       <div id="client-doc" class="client-doc"></div>
     </div>
@@ -2178,7 +2184,7 @@ function downloadBlob(content, filename) {
 function doPrint(){
   const doc=document.getElementById('client-doc');
   const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Смета</title><style>body{font-family:Arial,sans-serif;font-size:13px;color:#000;padding:32px}.client-title{text-align:center;font-size:20px;font-weight:700;letter-spacing:.06em;margin-bottom:8px}.client-meta{display:flex;justify-content:space-between;font-size:12px;color:#555;margin-bottom:24px;padding:8px 0;border-top:1px solid #ddd;border-bottom:1px solid #ddd}table{width:100%;border-collapse:collapse;font-size:13px}th{padding:8px 10px;background:#f0f0f0;text-align:left;font-weight:600;font-size:12px;border:1px solid #ccc}th.r{text-align:right}td{padding:8px 10px;border:1px solid #ccc}td.r{text-align:right;font-family:monospace}.sh td{background:#e8e8e8;font-weight:600}.sh-total td{background:#f0f0f0;font-weight:400}.gt td{background:#1F3A4D;color:#fff;font-weight:700;font-size:14px}.client-note{font-size:11px;color:#999;margin-top:10px;text-align:right}@media print{@page{margin:20mm}}</style></head><body>${doc.innerHTML}</body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Смета</title><style>@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{font-family:'Inter',sans-serif;font-size:13px;color:#1A1A18;background:#fff;padding:40px 48px}.client-title{text-align:center;font-size:19px;font-weight:700;letter-spacing:.05em;margin-bottom:8px;color:#1A1A18}.client-meta{display:flex;justify-content:space-between;font-size:12px;color:#6B6B62;margin-bottom:26px;padding:9px 0;border-top:1px solid #E2E0D8;border-bottom:1px solid #E2E0D8}table{width:100%;border-collapse:collapse;font-size:13px}th{padding:9px 12px;background:#F0EFE9;text-align:left;font-weight:600;font-size:12px;border:1px solid #E2E0D8;color:#1A1A18}th.r{text-align:right}td{padding:9px 12px;border:1px solid #E2E0D8;color:#1A1A18}td.r{text-align:right;font-family:'JetBrains Mono',monospace;font-size:12px}.sh td{background:#F0EFE9;font-weight:600}.sh-total td{background:#F7F6F2;font-weight:400;color:#6B6B62}.gt td{background:#1F3A4D;color:#fff;font-weight:700;font-size:14px}.gt td.r{font-family:'JetBrains Mono',monospace}.client-note{font-size:11px;color:#9E9E93;margin-top:14px;text-align:right}@media print{@page{margin:20mm}}</style></head><body>${doc.innerHTML}</body></html>`);
   w.document.close();setTimeout(()=>w.print(),350);
 }
 
