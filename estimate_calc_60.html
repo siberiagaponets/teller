@@ -2134,29 +2134,39 @@ function exportToExcel(){
   downloadBlob(wb, `Смета_${cName||'проект'}_${ds}.xls`);
 }
 
+function xlsxColWidth(h) {
+  if(h==='Наименование') return 240;
+  if(h==='Состав / результат') return 380;
+  if(h==='Ед.') return 50;
+  if(h==='Кол-во') return 60;
+  return 120;
+}
+
 function buildXLSX(rows, headers, cName, pName) {
-  // Build HTML table that Excel can open
+  // Build HTML table that Excel can open, styled to match the client estimate view
+  const colgroup = `<colgroup>${headers.map(h=>`<col style="width:${xlsxColWidth(h)}px">`).join('')}</colgroup>`;
   let html2 = `<html xmlns:o="urn:schemas-microsoft-com:office:office"
     xmlns:x="urn:schemas-microsoft-com:office:excel"
     xmlns="http://www.w3.org/TR/REC-html40">
   <head><meta charset="UTF-8">
   <style>
-    body{font-family:Arial,sans-serif;font-size:11pt}
-    .stage{background:#e8e8e8;font-weight:bold;font-size:12pt}
-    .item{background:#ffffff}
-    .spec{background:#f5f5f5;font-size:10pt;color:#555}
-    .total{background:#f0f0f0;font-style:italic}
-    .grand{background:#1a2e44;color:#ffffff;font-weight:bold;font-size:12pt}
-    .header{background:#2d3748;color:#ffffff;font-weight:bold}
+    body{font-family:Arial,sans-serif;font-size:11pt;color:#1A1A18}
+    .stage{background:#F0EFE9;font-weight:bold;font-size:12pt;color:#1A1A18}
+    .item{background:#ffffff;color:#1A1A18}
+    .spec{background:#F0EFE9;font-size:10pt;color:#6B6B62}
+    .total{background:#F7F6F2;color:#6B6B62}
+    .grand{background:#1F3A4D;color:#ffffff;font-weight:bold;font-size:12pt}
+    .header{background:#F0EFE9;color:#1A1A18;font-weight:bold}
     .num{mso-number-format:"# ##0"}
-    td{padding:6px 10px;border:1px solid #ddd}
-  </style></head><body><table>`;
-  
+    td{padding:8px 10px;border:1px solid #E2E0D8;vertical-align:top}
+  </style></head><body><table>
+  ${colgroup}`;
+
   rows.forEach(row => {
     if(Array.isArray(row)) {
       // plain row (meta, empty, headers)
-      if(row.length===0){ html2+=`<tr><td colspan="${headers.length}"></td></tr>`; return; }
-      if(row.length===1){ html2+=`<tr><td colspan="${headers.length}" style="font-size:10pt;color:#666">${row[0]}</td></tr>`; return; }
+      if(row.length===0){ html2+=`<tr><td colspan="${headers.length}" style="border:none"></td></tr>`; return; }
+      if(row.length===1){ html2+=`<tr><td colspan="${headers.length}" style="font-size:10pt;color:#6B6B62;border:none">${row[0]}</td></tr>`; return; }
       // headers row
       html2+=`<tr>${row.map(h=>`<td class="header">${h}</td>`).join('')}</tr>`;
       return;
