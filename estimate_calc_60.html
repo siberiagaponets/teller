@@ -294,7 +294,6 @@
         <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
         Сообщить о проблеме
       </button>
-      <button onclick="openBugSettings()" title="Настройка токена" style="flex:0 0 auto;padding:5px 8px;background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:rgba(255,255,255,0.45);cursor:pointer;display:flex;align-items:center;justify-content:center">⚙</button>
     </div>
   </nav>
   <div class="sidebar-summary">
@@ -724,7 +723,7 @@
       <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
         <div>
           <div style="font-weight:700;font-size:15px">🐛 Сообщить о проблеме</div>
-          <div style="font-size:12px;color:var(--text-3);margin-top:2px">Создаст Issue в GitHub</div>
+          <div style="font-size:12px;color:var(--text-3);margin-top:2px">Отправит сообщение нам в таблицу</div>
         </div>
         <button onclick="closeBugModal()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:20px;padding:2px 8px;border-radius:5px">✕</button>
       </div>
@@ -741,10 +740,6 @@
           <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:5px">Что ожидалось?</label>
           <textarea id="bug-expected" placeholder="Опишите ожидаемое поведение..." rows="2" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-family:Inter,sans-serif;font-size:13px;resize:vertical;background:var(--surface2);color:var(--text)"></textarea>
         </div>
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:5px">Шаги воспроизведения</label>
-          <textarea id="bug-steps" placeholder="1. Открыл вкладку...&#10;2. Нажал кнопку...&#10;3. Увидел..." rows="3" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-family:Inter,sans-serif;font-size:13px;resize:vertical;background:var(--surface2);color:var(--text)"></textarea>
-        </div>
         <div id="bug-status" style="font-size:12px;display:none;padding:8px 12px;border-radius:6px"></div>
       </div>
       <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end">
@@ -754,36 +749,6 @@
     </div>
   </div>
 
-
-  <!-- BUG SETTINGS MODAL -->
-  <div id="bug-settings-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:2100;align-items:center;justify-content:center">
-    <div style="background:var(--surface);border-radius:14px;width:420px;max-width:95vw;box-shadow:0 24px 80px rgba(0,0,0,0.25)">
-      <div style="padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
-        <div style="font-weight:700;font-size:15px">🔑 Настройка GitHub токена</div>
-        <button onclick="closeBugSettings()" style="background:none;border:none;cursor:pointer;color:var(--text-3);font-size:20px;padding:2px 8px;border-radius:5px">✕</button>
-      </div>
-      <div style="padding:18px 22px;display:flex;flex-direction:column;gap:12px">
-        <p style="font-size:13px;color:var(--text-2);line-height:1.6;margin:0">
-          Токен нужен для создания Issues в GitHub.<br>
-          Создайте на <a href="https://github.com/settings/tokens" target="_blank" style="color:var(--accent)">github.com/settings/tokens</a> с правом <code style="background:var(--surface2);padding:1px 5px;border-radius:3px">public_repo</code>.<br>
-          Токен хранится только в вашем браузере (localStorage).
-        </p>
-        <div>
-          <label style="font-size:12px;font-weight:600;color:var(--text-2);display:block;margin-bottom:5px">GitHub Personal Access Token</label>
-          <input id="gh-token-input" type="password" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-            style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;font-family:monospace;font-size:13px;background:var(--surface2);color:var(--text)">
-        </div>
-        <div id="bug-settings-status" style="display:none;font-size:12px;padding:8px 12px;border-radius:6px"></div>
-      </div>
-      <div style="padding:14px 22px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:space-between;align-items:center">
-        <button id="clear-token-btn" onclick="clearBugToken()" style="padding:7px 14px;border:1px solid #fee2e2;border-radius:7px;background:none;font-family:Inter,sans-serif;font-size:12px;cursor:pointer;color:#dc2626">Удалить токен</button>
-        <div style="display:flex;gap:8px">
-          <button onclick="closeBugSettings()" style="padding:8px 18px;border:1px solid var(--border);border-radius:7px;background:none;font-family:Inter,sans-serif;font-size:13px;cursor:pointer;color:var(--text-2)">Отмена</button>
-          <button onclick="saveBugToken()" style="padding:8px 20px;background:var(--accent);color:#fff;border:none;border-radius:7px;font-family:Inter,sans-serif;font-size:13px;font-weight:600;cursor:pointer">Сохранить</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
 </main>
 </div>
@@ -10679,8 +10644,13 @@ onScore();
 
 
 // ── Bug Reporter ─────────────────────────────────────────
-const GH_TOKEN = () => localStorage.getItem('gh_bug_token') || '';
-const GH_REPO  = 'siberiagaponets/teller';
+const BUG_FORM_ACTION = 'https://docs.google.com/forms/d/e/1FAIpQLSeY_LcsPr6G4ZbmBXsPmfXpJ2e8KGDRLNN_kH9_YQfFCah7aw/formResponse';
+const BUG_FORM_ENTRIES = {
+  title: 'entry.1493400700',
+  actual: 'entry.783411214',
+  expected: 'entry.1767523270',
+  context: 'entry.1078612020'
+};
 
 function openBugModal() {
   const m = document.getElementById('bug-modal');
@@ -10690,7 +10660,7 @@ function openBugModal() {
 function closeBugModal() {
   const m = document.getElementById('bug-modal');
   if(m) m.style.display='none';
-  ['bug-title','bug-actual','bug-expected','bug-steps'].forEach(id=>{
+  ['bug-title','bug-actual','bug-expected'].forEach(id=>{
     const el=document.getElementById(id); if(el) el.value='';
   });
   const st=document.getElementById('bug-status');
@@ -10703,7 +10673,6 @@ async function submitBugReport() {
   const title   = document.getElementById('bug-title')?.value?.trim();
   const actual  = document.getElementById('bug-actual')?.value?.trim();
   const expected= document.getElementById('bug-expected')?.value?.trim();
-  const steps   = document.getElementById('bug-steps')?.value?.trim();
   const statusEl= document.getElementById('bug-status');
   const btn     = document.getElementById('bug-submit-btn');
 
@@ -10713,53 +10682,32 @@ async function submitBugReport() {
     return;
   }
 
-  const token = GH_TOKEN();
-  if(!token) {
-    statusEl.style.display='block';
-    statusEl.style.background='#fef3c7';
-    statusEl.style.color='#92400e';
-    statusEl.innerHTML = '⚠ Токен GitHub не настроен. <a href="#" onclick="openBugSettings();return false;" style="color:#92400e;font-weight:600">Добавить токен →</a>';
-    btn.disabled=false; btn.textContent='Отправить';
-    return;
-  }
   btn.disabled = true;
   btn.textContent = 'Отправляю...';
 
   const cName = document.getElementById('client-name')?.value||'';
   const pName = document.getElementById('project-name')?.value||'';
-  const context = cName||pName ? `\n\n---\n*Контекст сметы: клиент «${cName}», проект «${pName}»*` : '';
+  const context = (cName||pName) ? `Клиент: «${cName}», проект: «${pName}»` : '';
 
-  const body = [
-    actual    ? `## Что происходит\n${actual}`    : '',
-    expected  ? `## Что ожидалось\n${expected}`  : '',
-    steps     ? `## Шаги воспроизведения\n${steps}` : '',
-    context,
-    `\n---\n*Отправлено из калькулятора смет*`
-  ].filter(Boolean).join('\n\n');
+  const params = new URLSearchParams();
+  params.set(BUG_FORM_ENTRIES.title, title);
+  params.set(BUG_FORM_ENTRIES.actual, actual);
+  params.set(BUG_FORM_ENTRIES.expected, expected);
+  params.set(BUG_FORM_ENTRIES.context, context);
 
   try {
-    const res = await fetch(`https://api.github.com/repos/${GH_REPO}/issues`, {
+    await fetch(BUG_FORM_ACTION, {
       method: 'POST',
-      headers: {
-        'Authorization': `token ${GH_TOKEN()}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/vnd.github.v3+json'
-      },
-      body: JSON.stringify({ title, body, labels: ['bug', 'needs-triage'] })
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString()
     });
-
-    const data = await res.json();
-
-    if(res.ok) {
-      statusEl.style.display='block';
-      statusEl.style.background='#dcfce7';
-      statusEl.style.color='#166534';
-      statusEl.innerHTML = `✓ Issue #${data.number} создан — <a href="${data.html_url}" target="_blank" style="color:#166534">открыть на GitHub</a>`;
-      btn.textContent = 'Отправлено ✓';
-      setTimeout(closeBugModal, 3000);
-    } else {
-      throw new Error(data.message || 'Ошибка API');
-    }
+    statusEl.style.display='block';
+    statusEl.style.background='#dcfce7';
+    statusEl.style.color='#166534';
+    statusEl.textContent = '✓ Сообщение отправлено, спасибо!';
+    btn.textContent = 'Отправлено ✓';
+    setTimeout(closeBugModal, 2000);
   } catch(e) {
     statusEl.style.display='block';
     statusEl.style.background='#fee2e2';
@@ -10774,51 +10722,6 @@ async function submitBugReport() {
 document.addEventListener('keydown', e => {
   if(e.key==='Escape') closeBugModal();
 });
-
-
-function openBugSettings() {
-  const m = document.getElementById('bug-settings-modal');
-  if(!m) return;
-  const existing = localStorage.getItem('gh_bug_token') || '';
-  const inp = document.getElementById('gh-token-input');
-  if(inp) inp.value = existing;
-  document.getElementById('bug-settings-status').style.display='none';
-  m.style.display='flex';
-  setTimeout(()=>inp?.focus(), 100);
-}
-
-function closeBugSettings() {
-  document.getElementById('bug-settings-modal').style.display='none';
-}
-
-function saveBugToken() {
-  const val = document.getElementById('gh-token-input')?.value?.trim();
-  const st = document.getElementById('bug-settings-status');
-  if(!val || !val.startsWith('ghp_')) {
-    st.style.display='block';
-    st.style.background='#fee2e2';
-    st.style.color='#991b1b';
-    st.textContent = 'Токен должен начинаться с ghp_';
-    return;
-  }
-  localStorage.setItem('gh_bug_token', val);
-  st.style.display='block';
-  st.style.background='#dcfce7';
-  st.style.color='#166534';
-  st.textContent = '✓ Токен сохранён в браузере';
-  setTimeout(closeBugSettings, 1200);
-}
-
-function clearBugToken() {
-  localStorage.removeItem('gh_bug_token');
-  const inp = document.getElementById('gh-token-input');
-  if(inp) inp.value = '';
-  const st = document.getElementById('bug-settings-status');
-  st.style.display='block';
-  st.style.background='#fef3c7';
-  st.style.color='#92400e';
-  st.textContent = 'Токен удалён';
-}
 
 </script>
 </body>
