@@ -289,6 +289,11 @@
       <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
       Прайс услуг с описанием
     </button>
+    <div class="nav-label" style="margin-top:8px">Помощь</div>
+    <button class="nav-btn" onclick="showTab('help')">
+      <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.6" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Инструкция
+    </button>
     <div style="display:flex;gap:6px;margin:6px 8px 2px">
       <button onclick="openBugModal()" style="flex:1;padding:5px 8px;background:rgba(220,38,38,0.2);border:1px solid rgba(220,38,38,0.35);border-radius:6px;color:rgba(255,150,150,0.9);font-family:Inter,sans-serif;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px">
         <svg width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
@@ -660,6 +665,69 @@
         </tr></thead>
         <tbody id="services-body"></tbody>
       </table></div>
+    </div>
+  </div>
+
+  <!-- HELP / INSTRUCTIONS TAB -->
+  <div id="tab-help" style="display:none">
+    <div class="page-header">
+      <h2>Инструкция</h2>
+      <p>Как пользоваться калькулятором смет</p>
+    </div>
+
+    <div class="card">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><strong>1. Как устроен калькулятор</strong></div>
+      <div style="padding:16px 20px;font-size:13px;line-height:1.7;color:var(--text)">
+        <p>Смета собирается один раз во <strong>«Внутренней смете»</strong> — там видны и себестоимость, и цена клиенту. Вкладка <strong>«Клиентская смета»</strong> — это витрина: она автоматически показывает ту же смету, но без внутренних цифр, в виде, который можно печатать или отправлять клиенту.</p>
+        <p style="margin-top:8px">Раздел <strong>«Справочники»</strong> — это база цен и ставок, из которой калькулятор берёт значения при добавлении услуг. Изменения в справочниках нужно вносить в код руками (написать сюда в чат, что добавить/поправить) — сами по себе они не редактируются прямо на этой странице.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><strong>2. Как собрать смету</strong></div>
+      <div style="padding:16px 20px;font-size:13px;line-height:1.7;color:var(--text)">
+        <ol style="padding-left:18px;display:flex;flex-direction:column;gap:10px">
+          <li><strong>Заполните шапку:</strong> клиент, проект, дата, сроки, категория клиента (BASE/STANDART/FULL/FULL+ — влияет на целевую маржу и на то, какие услуги предлагаются по умолчанию).</li>
+          <li><strong>Реквизиты и контакты</strong> (сворачиваемый блок) — юрлицо-исполнитель и ИНН уже заполнены (ООО «Теллер»), при необходимости замените. Менеджер/телефон/email/сайт — по желанию, они попадут в клиентскую смету.</li>
+          <li><strong>Добавьте этап</strong> кнопкой «Добавить этап» внизу — либо выключите переключатель «Разбить по этапам», если удобнее видеть все позиции одним списком.</li>
+          <li><strong>Добавьте услугу</strong> внутри этапа. В поле поиска начните вводить название — список сузится. Услуги сгруппированы по линиям (Флагманы, Посты, Продвижение и т.д.). Сверху списка есть «Ввести вручную» — для нестандартной позиции без привязки к прайсу.</li>
+          <li>При выборе услуги часы специалистов подставляются автоматически (кнопка «N специалистов · N ч» открывает разбивку) — можно поправить часы вручную, цена клиенту пересчитается сама. Кнопками «+ специалист» и «+ юнит» можно добавить дополнительные строки себестоимости.</li>
+          <li><strong>Кол-во</strong> и <strong>цену</strong> можно менять напрямую в таблице. Поле «Комментарий» видно только вам, «Описание для клиента» — то, что увидит клиент под названием услуги.</li>
+          <li>У каждого этапа есть своя <strong>скидка (%)</strong> — применяется к сумме этапа при подсчёте клиентской цены.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><strong>3. Клиентская смета, печать и экспорт</strong></div>
+      <div style="padding:16px 20px;font-size:13px;line-height:1.7;color:var(--text)">
+        <p>На вкладке «Клиентская смета» переключателями сверху можно скрыть/показать этапы, количество, цену за единицу, описание, НДС — это влияет и на печать, и на выгрузку.</p>
+        <ul style="padding-left:18px;margin-top:6px;display:flex;flex-direction:column;gap:6px">
+          <li><strong>Печать / PDF</strong> — открывает окно печати браузера с готовым оформлением; там же можно сохранить как PDF.</li>
+          <li><strong>Скачать Excel</strong> — выгружает текущую клиентскую смету в .xls, с теми же цветами и структурой, что и на экране.</li>
+          <li><strong>Скачать Excel</strong> во «Внутренней смете» — выгружает внутреннюю версию (с себестоимостью).</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><strong>4. Справочники</strong></div>
+      <div style="padding:16px 20px;font-size:13px;line-height:1.7;color:var(--text)">
+        <ul style="padding-left:18px;display:flex;flex-direction:column;gap:6px">
+          <li><strong>Цены услуг подробно</strong> — разбивка каждой услуги по ролям: часы, внутренняя и клиентская ставка, стоимость.</li>
+          <li><strong>Ставки команды</strong> — почасовые ставки специалистов (внутренняя и клиентская) с описанием роли.</li>
+          <li><strong>Цены юнитов</strong> — стоимость типовых единиц контента по грейдам подрядчика (BASE/STANDART/FULL).</li>
+          <li><strong>Прайс услуг с описанием</strong> — весь каталог услуг одним списком: цена, маржа, линия, клиентское описание. Есть поиск и фильтр по линии.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="padding:16px 20px;border-bottom:1px solid var(--border)"><strong>5. Сохранение проекта и баг-репорты</strong></div>
+      <div style="padding:16px 20px;font-size:13px;line-height:1.7;color:var(--text)">
+        <p><strong>Сохранить</strong> — скачивает смету в файл .json на компьютер (и дублирует в память браузера). <strong>Загрузить</strong> — открывает такой файл обратно в калькулятор. Так смету можно передать коллеге или вернуться к ней позже — калькулятор ничего не хранит на сервере.</p>
+        <p style="margin-top:8px"><strong>Сообщить о проблеме</strong> — форма для любого пользователя, без регистрации и паролей. Опишите, что произошло и что ожидалось — сообщение уйдёт напрямую в таблицу с багами.</p>
+      </div>
     </div>
   </div>
 
@@ -1280,7 +1348,8 @@ function renderStages(){
                 const catLevel2={'BASE':1,'STANDART':2,'FULL':3,'FULL+':4};
                 const cLevel2=catLevel2[clientCat]||3;
                 const specials=['custom','from-specialists','from-units'];
-                const specialOpts=SVCS.filter(s=>specials.includes(s.id))
+                const visibleSpecials=['custom'];
+                const specialOpts=SVCS.filter(s=>visibleSpecials.includes(s.id))
                   .map(s=>`<option value="${s.id}"${s.id===item.svcId?' selected':''}>${s.name}</option>`).join('');
                 const groups={};
                 SVCS.forEach(s=>{
@@ -1782,7 +1851,7 @@ function onUnitQty(sid,iid,idx,val){const s=stages.find(s=>s.id===sid),it=s?.ite
 function onUnitPrice(sid,iid,idx,val){const s=stages.find(s=>s.id===sid),it=s?.items.find(i=>i.id===iid);if(it&&it.unitItems[idx]){it.unitItems[idx].price=parseFloat(val)||0;renderUnitBuilder(sid,iid);}}
 function removeUnitRow(sid,iid,idx){const s=stages.find(s=>s.id===sid),it=s?.items.find(i=>i.id===iid);if(it&&it.unitItems){it.unitItems.splice(idx,1);renderUnitBuilder(sid,iid);}}
 
-const ALL_TABS=['internal','client','ref-detail','ref-team','ref-units','ref-services'];
+const ALL_TABS=['internal','client','ref-detail','ref-team','ref-units','ref-services','help'];
 function showTab(t){
   ALL_TABS.forEach(id=>{const el=document.getElementById('tab-'+id);if(el)el.style.display=(id===t)?'block':'none';});
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
