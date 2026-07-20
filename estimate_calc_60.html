@@ -305,10 +305,10 @@
     <div class="summary-label">Итого для клиента</div>
     <div class="summary-val" id="sb-total">0 ₽</div>
     <div class="summary-sub" id="sb-total-vat" style="color:rgba(255,255,255,0.6);font-size:11px">с НДС: 0 ₽</div>
-    <div class="summary-sub" id="sb-margin-rub" style="margin-top:4px">Маржа: 0 ₽</div>
+    <div class="summary-sub" id="sb-margin-rub" style="margin-top:4px;display:none">Маржа: 0 ₽</div>
     <div class="summary-sub" id="sb-hours" style="margin-top:2px">Часов в проекте: —</div>
-    <div class="margin-bar"><div class="margin-fill" id="sb-bar" style="width:0%"></div></div>
-    <div class="margin-labels"><span>Маржинальность</span><span id="sb-margin">0%</span></div>
+    <div class="margin-bar" style="display:none"><div class="margin-fill" id="sb-bar" style="width:0%"></div></div>
+    <div class="margin-labels" style="display:none"><span>Маржинальность</span><span id="sb-margin">0%</span></div>
   </div>
 </aside>
 
@@ -661,7 +661,6 @@
           <th>Категория</th>
           <th>Ед.</th>
           <th class="r">Цена, ₽</th>
-          <th class="r">Маржа</th>
         </tr></thead>
         <tbody id="services-body"></tbody>
       </table></div>
@@ -938,7 +937,6 @@ function renderServices(q, line) {
   if (!tbody) return;
   // Use UNIFIED_CATALOG which has all 94 services with full data
   const source = (typeof UNIFIED_CATALOG !== 'undefined') ? UNIFIED_CATALOG : [];
-  const marginColor = m => m>=0.43?'var(--green)':m>=0.35?'var(--amber)':'var(--red)';
   const items = source.filter(s => {
     if (line && s.line !== line) return false;
     if (q) {
@@ -950,8 +948,6 @@ function renderServices(q, line) {
   tbody.innerHTML = items.map(s => {
     const desc = (s.desc||'').replace(/\n/g,'<br>');
     const priceStr = s.eff_price>0 ? R2(s.eff_price) : '<span style="color:var(--text-3)">по запросу</span>';
-    const mStr = s.margin!=null ? (s.margin*100).toFixed(0)+'%' : '—';
-    const mColor = s.margin!=null ? marginColor(s.margin) : 'var(--text-3)';
     return `<tr>
       <td>
         <div style="font-weight:500;font-size:13px">${s.id}</div>
@@ -961,9 +957,8 @@ function renderServices(q, line) {
       <td>${catBadge(s.cat)}</td>
       <td style="color:var(--text-2);font-size:12px">${s.unit||'—'}</td>
       <td class="r"><strong>${priceStr}</strong></td>
-      <td class="r" style="color:${mColor};font-family:var(--mono);font-size:12px;font-weight:600">${mStr}</td>
     </tr>`;
-  }).join('') || '<tr><td colspan="6" class="ref-empty">Ничего не найдено</td></tr>';
+  }).join('') || '<tr><td colspan="5" class="ref-empty">Ничего не найдено</td></tr>';
   // update count
   const cnt = document.getElementById('svc-count');
   if(cnt) cnt.textContent = items.length + ' из ' + source.length + ' услуг';
@@ -1149,7 +1144,7 @@ function onSName(sid,v){const s=stages.find(s=>s.id===sid);if(s){s.name=v;render
 function onCName(sid,iid,v){const s=stages.find(s=>s.id===sid),i=s?.items.find(i=>i.id===iid);if(i){i.customName=v;renderClient();}}
 function onComment(sid,iid,v){const s=stages.find(s=>s.id===sid),i=s?.items.find(i=>i.id===iid);if(i)i.comment=v;}
 function onClientDesc(sid,iid,v){const s=stages.find(s=>s.id===sid),i=s?.items.find(i=>i.id===iid);if(i){i.clientDesc=v;renderClient();}}
-function onStageDiscount(sid,val){const s=stages.find(s=>s.id===sid);if(s){s.discount=Math.max(0,Math.min(99,parseFloat(val)||0));renderAll();}}
+function onStageDiscount(sid,val){const s=stages.find(s=>s.id===sid);if(s){s.discount=Math.max(0,Math.min(15,parseFloat(val)||0));renderAll();}}
 
 function onHoursChange(sid,iid,role,val){
   const s=stages.find(s=>s.id===sid),it=s?.items.find(i=>i.id===iid);
@@ -1165,7 +1160,7 @@ function onHoursChange(sid,iid,role,val){
   const totalEl=document.getElementById('total-display-'+iid);
   if(totalEl&&newPrice!==null)totalEl.textContent=Math.round(newPrice*it.qty).toLocaleString('ru-RU')+' ₽';
   const stageSub=document.getElementById('stage-sub-'+sid);
-  if(stageSub&&s){const stC=sCost(s),stT=stageClientTotal(s);stageSub.innerHTML=`<span>Маржа: ${Math.round(stC).toLocaleString('ru-RU')} ₽ &nbsp;|&nbsp; Этап:</span>${Math.round(stT).toLocaleString('ru-RU')} ₽`;}
+  if(stageSub&&s){const stT=stageClientTotal(s);stageSub.innerHTML=`<span>Этап:</span> ${Math.round(stT).toLocaleString('ru-RU')} ₽`;}
   const totalH=Object.values(it.customHours).reduce((a,b)=>a+b,0);
   const fpHours=document.getElementById('fp-hours-'+iid);
   const fpIn=document.getElementById('fp-in-'+iid);
@@ -1385,8 +1380,8 @@ function renderStages(){
       <div class="card-foot">
         <button class="btn-add-item" onclick="addItem('${stage.id}')"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg> Добавить услугу</button>
         <div style="display:flex;align-items:center;gap:12px">
-          <label style="font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:5px">Скидка: <input type="number" min="0" max="99" step="1" value="${stage.discount||0}" style="width:48px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;font-family:var(--mono);font-size:12px;text-align:right;background:var(--surface)" oninput="onStageDiscount('${stage.id}',this.value)">%</label>
-          <div class="stage-sub" id="stage-sub-${stage.id}"><span>Маржа: ${R(sCost(stage))} ₽ &nbsp;|&nbsp; Этап:</span>${R(stageClientTotal(stage))} ₽${stage.discount?(()=>{
+          <label style="font-size:11px;color:var(--text-3);display:flex;align-items:center;gap:5px">Скидка: <input type="number" min="0" max="15" step="1" value="${stage.discount||0}" style="width:48px;padding:3px 6px;border:1px solid var(--border);border-radius:5px;font-family:var(--mono);font-size:12px;text-align:right;background:var(--surface)" oninput="onStageDiscount('${stage.id}',this.value)">%</label>
+          <div class="stage-sub" id="stage-sub-${stage.id}"><span>Этап:</span> ${R(stageClientTotal(stage))} ₽${stage.discount?(()=>{
     const rev=sTotal(stage);
     const cost=sCost(stage);
     const revDisc=stageClientTotal(stage);
@@ -1968,22 +1963,21 @@ function exportInternalToExcel() {
   </style></head><body>`;
 
   // Meta
-  html2 += `<table><tr><td colspan="8" style="font-size:13pt;font-weight:bold;background:#1a2e44;color:#fff;padding:10px">ВНУТРЕННЯЯ СМЕТА</td></tr>`;
-  html2 += `<tr><td colspan="4" style="color:#666">Клиент: <strong>${cName}</strong></td><td colspan="4" style="color:#666">Проект: <strong>${pName}</strong> | Дата: <strong>${ds}</strong></td></tr></table><br>`;
+  html2 += `<table><tr><td colspan="7" style="font-size:13pt;font-weight:bold;background:#1a2e44;color:#fff;padding:10px">ВНУТРЕННЯЯ СМЕТА</td></tr>`;
+  html2 += `<tr><td colspan="4" style="color:#666">Клиент: <strong>${cName}</strong></td><td colspan="3" style="color:#666">Проект: <strong>${pName}</strong> | Дата: <strong>${ds}</strong></td></tr></table><br>`;
 
   // Headers
   html2 += `<table><tr class="header">
     <td>Услуга / Специалист</td><td>Ед.</td><td align="right">Кол-во / Часы</td>
     <td align="right">Ставка IN, ₽</td><td align="right">Ставка OUT, ₽</td>
     <td align="right">Сумма IN, ₽</td><td align="right">Сумма OUT, ₽</td>
-    <td align="right">Маржа, %</td>
   </tr>`;
 
   let grandRev = 0, grandCost = 0;
 
   stages.forEach(stage => {
     const disc = stage.discount ? (1 - stage.discount/100) : 1;
-    html2 += `<tr class="stage"><td colspan="8">${stage.name}${stage.discount?` (скидка ${stage.discount}%)`:''}`;
+    html2 += `<tr class="stage"><td colspan="7">${stage.name}${stage.discount?` (скидка ${stage.discount}%)`:''}`;
     html2 += `</td></tr>`;
 
     let stageRev = 0, stageCost = 0;
@@ -1993,7 +1987,6 @@ function exportInternalToExcel() {
       const name = item.svcId==='custom'?item.customName:(sv?sv.name:'Услуга');
       const rev = iTotal(item) * disc;
       const cost = iCost(item) * disc;
-      const margin = rev > 0 ? ((rev-cost)/rev*100).toFixed(1)+'%' : '—';
       stageRev += rev; stageCost += cost;
 
       html2 += `<tr class="item">
@@ -2004,7 +1997,6 @@ function exportInternalToExcel() {
         <td align="right" class="num">${Math.round(item.price)}</td>
         <td align="right" class="num">${Math.round(cost)}</td>
         <td align="right" class="num">${Math.round(rev)}</td>
-        <td align="right">${margin}</td>
       </tr>`;
 
       // Specialists
@@ -2025,7 +2017,6 @@ function exportInternalToExcel() {
             <td align="right" class="num">${rOut||'—'}</td>
             <td align="right" class="num">${sumIn||'—'}</td>
             <td align="right" class="num">${sumOut||'—'}</td>
-            <td align="right">—</td>
           </tr>`;
         });
       }
@@ -2043,28 +2034,23 @@ function exportInternalToExcel() {
             <td align="right" class="num">${u.price||0}</td>
             <td align="right">—</td>
             <td align="right" class="num">${uTot}</td>
-            <td align="right">—</td>
           </tr>`;
         });
       }
     });
 
-    const stM = stageRev > 0 ? ((stageRev-stageCost)/stageRev*100).toFixed(1)+'%' : '—';
     html2 += `<tr class="total">
       <td colspan="5" align="right">Итого по этапу:</td>
       <td align="right" class="num">${Math.round(stageCost)}</td>
       <td align="right" class="num">${Math.round(stageRev)}</td>
-      <td align="right">${stM}</td>
     </tr>`;
     grandRev += stageRev; grandCost += stageCost;
   });
 
-  const gm = grandRev > 0 ? ((grandRev-grandCost)/grandRev*100).toFixed(1)+'%' : '—';
   html2 += `<tr class="grand">
     <td colspan="5" align="right">ИТОГО ПО ПРОЕКТУ:</td>
     <td align="right" class="num">${Math.round(grandCost)}</td>
     <td align="right" class="num">${Math.round(grandRev)}</td>
-    <td align="right">${gm}</td>
   </tr></table></body></html>`;
 
   downloadBlob(html2, `Внутренняя_смета_${cName}_${ds}.xls`);
